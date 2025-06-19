@@ -23,6 +23,5 @@ func (l LinkDeps) LinkCreate(link *models.Link) {
 func (l LinkDeps) LinkGet(hash string) *models.Link {
 	var originalLink *models.Link
 	l.Database.First(&originalLink, "hash = ?", hash)
-	// l.Database.Find(&originalLink)
 	return originalLink
 }

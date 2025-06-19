@@ -21,9 +21,10 @@ func NewLink(url string) *Link {
 
 // Generate Hash for Url
 func generateHash(n int) string {
+	r := []rune("qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM")
 	b := make([]rune, n)
 	for i := range b {
-		b[i] = rune(rand.Intn(len([]rune("qwertyuioplkjhgfdsazxcvbnmqwQWERTYUIOPASDFGHJKLZXCVBNM123456789"))))
+		b[i] = r[(rand.Intn(len(r)))]
 	}
 	return string(b)
 }

@@ -18,8 +18,15 @@ func RegisterRoutes(router *http.ServeMux, link *service.LinkDeps) {
 	router.HandleFunc("GET /test", func(w http.ResponseWriter, req *http.Request) {
 		fmt.Println("Hello World")
 	})
-	router.HandleFunc("DELETE /login/{id}", deleteLink)
+	router.HandleFunc("GET /link/{hash}", handler.getUrlByHash)
 	router.HandleFunc("POST /create", handler.createUrl)
+	router.HandleFunc("DELETE /login/{id}", deleteLink)
+}
+
+func (h handlers) getUrlByHash(w http.ResponseWriter, req *http.Request) {
+	hash := req.PathValue("hash")
+	originalLink := h.link.LinkGet(hash)
+	http.Redirect(w, req, originalLink.Url, http.StatusPermanentRedirect)
 }
 
 func deleteLink(w http.ResponseWriter, req *http.Request) {

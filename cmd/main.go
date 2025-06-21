@@ -9,6 +9,7 @@ import (
 	"api/shorturl/internal/handlers"
 	"api/shorturl/internal/models"
 	"api/shorturl/internal/service"
+	"api/shorturl/middleware"
 
 	"github.com/joho/godotenv"
 )
@@ -28,16 +29,16 @@ func main() {
 	//Create LinkDependence
 	link := service.NewLink(db)
 
-	router := http.NewServeMux()
+	mux := http.NewServeMux()
 
 	//Register Routes
-	handlers.RegisterRoutes(router, link)
-	handlers.RegisterAuthRoutes(router, &dbConf)
+	handlers.RegisterRoutes(mux, link)
+	handlers.RegisterAuthRoutes(mux, &dbConf)
 
 	//Create Server
 	server := http.Server{
 		Addr:    ":8082",
-		Handler: router,
+		Handler: middleware.Logging(mux),
 	}
 
 	fmt.Println("Server is listening on port 8082")

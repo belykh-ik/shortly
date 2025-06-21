@@ -25,8 +25,12 @@ func (l LinkDeps) LinkUpdate(link *models.Link, id *uint64) {
 	l.Database.Where("id = ?", id).Updates(linkStruct)
 }
 
-func (l LinkDeps) LinkGet(hash string) *models.Link {
-	var originalLink *models.Link
+func (l LinkDeps) LinkGet(hash string) *db.Link {
+	var originalLink *db.Link
 	l.Database.First(&originalLink, "hash = ?", hash)
 	return originalLink
+}
+
+func (l LinkDeps) LinkDelete(id *uint64) {
+	l.Database.Delete(&db.Link{}, uint(*id))
 }

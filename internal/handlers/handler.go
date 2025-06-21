@@ -3,7 +3,6 @@ package handlers
 import (
 	"api/shorturl/internal/models"
 	"api/shorturl/internal/service"
-	"fmt"
 	"net/http"
 	"strconv"
 )
@@ -16,9 +15,6 @@ func RegisterRoutes(router *http.ServeMux, link *service.LinkDeps) {
 	handler := &handlers{
 		link: link,
 	}
-	router.HandleFunc("GET /test", func(w http.ResponseWriter, req *http.Request) {
-		fmt.Println("Hello World")
-	})
 	router.HandleFunc("GET /link/{hash}", handler.getUrlByHash)
 	router.HandleFunc("POST /create", handler.createUrl)
 	router.HandleFunc("PATCH /update/{id}", handler.updateUrl)
@@ -34,34 +30,34 @@ func (h handlers) getUrlByHash(w http.ResponseWriter, req *http.Request) {
 func (h handlers) createUrl(w http.ResponseWriter, req *http.Request) {
 	link, err := service.RequestJson[models.Link](req)
 	if err != nil {
-		service.ResponseJson(w, err)
+		service.ResponseJson(w, err, http.StatusBadRequest)
 	}
 	h.link.LinkCreate(link)
-	service.ResponseJson(w, link)
+	service.ResponseJson(w, link, http.StatusCreated)
 }
 
 func (h handlers) updateUrl(w http.ResponseWriter, req *http.Request) {
 	link, err := service.RequestJson[models.Link](req)
 	if err != nil {
-		service.ResponseJson(w, err)
+		service.ResponseJson(w, err, http.StatusBadRequest)
 	}
 	idString := req.PathValue("id")
 	id, err := strconv.ParseUint(idString, 10, 32)
 	if err != nil {
-		service.ResponseJson(w, err)
+		service.ResponseJson(w, err, http.StatusBadRequest)
 	}
 	h.link.LinkUpdate(link, &id)
-	service.ResponseJson(w, link)
+	service.ResponseJson(w, link, http.StatusOK)
 }
 
 func (h handlers) deleteLink(w http.ResponseWriter, req *http.Request) {
 	idString := req.PathValue("id")
 	id, err := strconv.ParseUint(idString, 10, 32)
 	if err != nil {
-		service.ResponseJson(w, err)
+		service.ResponseJson(w, err, http.StatusBadRequest)
 	}
 	err = h.link.LinkDelete(&id)
 	if err != nil {
-		service.ResponseJson(w, err)
+		service.ResponseJson(w, err, http.StatusForbidden)
 	}
 }

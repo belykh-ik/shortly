@@ -21,16 +21,12 @@ func RegisterAuthRoutes(router *http.ServeMux, db *models.Config) {
 
 func (h *AuthHandler) login() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		fmt.Println(h.Db.TOKEN)
 		fmt.Println("Login")
-		// data := &handlers.LoginResponse{
-		// 	Token: h.Db.Config,
-		// }
 		s, err := service.RequestJson[models.LoginRequest](req)
 		if err != nil {
-			service.ResponseJson(w, err)
+			service.ResponseJson(w, err, http.StatusBadRequest)
 		}
-		service.ResponseJson(w, s)
+		service.ResponseJson(w, s, http.StatusOK)
 	}
 }
 
@@ -39,8 +35,8 @@ func (h *AuthHandler) register() http.HandlerFunc {
 		fmt.Println("Register")
 		s, err := service.RequestJson[models.RegisterRequest](req)
 		if err != nil {
-			service.ResponseJson(w, err)
+			service.ResponseJson(w, err, http.StatusBadRequest)
 		}
-		service.ResponseJson(w, s)
+		service.ResponseJson(w, s, http.StatusOK)
 	}
 }

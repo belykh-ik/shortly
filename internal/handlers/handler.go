@@ -57,7 +57,10 @@ func (h handlers) updateUrl(w http.ResponseWriter, req *http.Request) {
 func (h handlers) deleteLink(w http.ResponseWriter, req *http.Request) {
 	idString := req.PathValue("id")
 	id, err := strconv.ParseUint(idString, 10, 32)
-	h.link.LinkDelete(&id)
+	if err != nil {
+		service.ResponseJson(w, err)
+	}
+	err = h.link.LinkDelete(&id)
 	if err != nil {
 		service.ResponseJson(w, err)
 	}

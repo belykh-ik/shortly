@@ -31,6 +31,11 @@ func (l LinkDeps) LinkGet(hash string) *db.Link {
 	return originalLink
 }
 
-func (l LinkDeps) LinkDelete(id *uint64) {
+func (l LinkDeps) LinkDelete(id *uint64) error {
+	tx := l.Database.First(&db.Link{}, "id = ?", id)
+	if tx.Error != nil {
+		return tx.Error
+	}
 	l.Database.Delete(&db.Link{}, uint(*id))
+	return nil
 }

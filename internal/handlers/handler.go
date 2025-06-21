@@ -5,6 +5,7 @@ import (
 	"api/shorturl/internal/service"
 	"fmt"
 	"net/http"
+	"strconv"
 )
 
 type handlers struct {
@@ -20,6 +21,7 @@ func RegisterRoutes(router *http.ServeMux, link *service.LinkDeps) {
 	})
 	router.HandleFunc("GET /link/{hash}", handler.getUrlByHash)
 	router.HandleFunc("POST /create", handler.createUrl)
+	router.HandleFunc("PATCH /update/{id}", handler.updateUrl)
 	router.HandleFunc("DELETE /login/{id}", deleteLink)
 }
 
@@ -39,6 +41,20 @@ func (h handlers) createUrl(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		service.ResponseJson(w, err)
 	}
-	fmt.Println(link)
 	h.link.LinkCreate(link)
+	service.ResponseJson(w, link)
+}
+
+func (h handlers) updateUrl(w http.ResponseWriter, req *http.Request) {
+	link, err := service.RequestJson[models.Link](req)
+	if err != nil {
+		service.ResponseJson(w, err)
+	}
+	idString := req.PathValue("id")
+	id, err := strconv.ParseUint(idString, 10, 32)
+	if err != nil {
+		service.ResponseJson(w, err)
+	}
+	h.link.LinkUpdate(link, &id)
+	service.ResponseJson(w, link)
 }

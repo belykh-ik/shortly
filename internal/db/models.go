@@ -24,6 +24,16 @@ func NewLink(url string) *Link {
 	}
 }
 
+func UpdateLink(url string, id *uint64) *Link {
+	return &Link{
+		Model: gorm.Model{
+			ID: uint(*id),
+		},
+		Url:  url,
+		Hash: generateHash(30),
+	}
+}
+
 // Generate Hash for Url
 func generateHash(n int) string {
 	newHash := make([]rune, n)

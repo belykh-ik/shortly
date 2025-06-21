@@ -20,6 +20,11 @@ func (l LinkDeps) LinkCreate(link *models.Link) {
 	l.Database.Create(linkStruct)
 }
 
+func (l LinkDeps) LinkUpdate(link *models.Link, id *uint64) {
+	linkStruct := db.NewLink(link.Url)
+	l.Database.Where("id = ?", id).Updates(linkStruct)
+}
+
 func (l LinkDeps) LinkGet(hash string) *models.Link {
 	var originalLink *models.Link
 	l.Database.First(&originalLink, "hash = ?", hash)

@@ -1,5 +1,6 @@
 .env
 main
 postgres_data/
+frontend/
 
 .DS_Store

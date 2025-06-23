@@ -24,7 +24,8 @@ func RegisterRoutes(router *http.ServeMux, link *service.LinkDeps) {
 func (h handlers) getUrlByHash(w http.ResponseWriter, req *http.Request) {
 	hash := req.PathValue("hash")
 	originalLink := h.link.LinkGet(hash)
-	http.Redirect(w, req, originalLink.Url, http.StatusPermanentRedirect)
+	// http.Redirect(w, req, originalLink.Url, http.StatusPermanentRedirect)
+	service.ResponseJson(w, originalLink, http.StatusOK)
 }
 
 func (h handlers) createUrl(w http.ResponseWriter, req *http.Request) {

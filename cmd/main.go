@@ -38,7 +38,7 @@ func main() {
 	//Create Server
 	server := http.Server{
 		Addr:    ":8082",
-		Handler: middleware.IsAuth(middleware.Cors(middleware.Logging(mux))),
+		Handler: middleware.Cors(middleware.Logging(mux)),
 	}
 
 	fmt.Println("Server is listening on port 8082")

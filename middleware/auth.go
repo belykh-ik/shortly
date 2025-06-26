@@ -11,6 +11,7 @@ func IsAuth(next http.Handler) http.Handler {
 		authorization := r.Header.Get("Authorization")
 		if authorization == "" {
 			fmt.Println("Is not auth")
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 		auth := strings.TrimPrefix(authorization, "Bareer ")

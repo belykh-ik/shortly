@@ -4,6 +4,8 @@ import (
 	"api/shorturl/internal/db"
 	"api/shorturl/internal/models"
 	"errors"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserRepository struct {
@@ -21,10 +23,14 @@ func (db *UserRepository) Create(reg *models.RegisterRequest) (*models.User, err
 	if userExist != nil {
 		return nil, errors.New("EXIST")
 	}
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(reg.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, errors.New("ERROR_ADD_PASSWORD")
+	}
 	user := &models.User{
 		Name:     reg.Name,
 		Email:    reg.Email,
-		Password: reg.Password,
+		Password: string(hashedPassword),
 	}
 	db.db.Create(user)
 	return user, nil

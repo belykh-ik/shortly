@@ -1,8 +1,23 @@
 package models
 
+import "gorm.io/gorm"
+
 type Config struct {
 	DSN   string
 	TOKEN string
+}
+
+type Link struct {
+	gorm.Model
+	Url  string `json:"url"`
+	Hash string `json:"hash" validate:"unique"`
+}
+
+type User struct {
+	gorm.Model
+	Name     string
+	Email    string `gorm:"index" validate:"unique"`
+	Password string
 }
 
 type LoginResponse struct {
@@ -20,6 +35,6 @@ type RegisterRequest struct {
 	Name     string `json:"name" validate:"required"`
 }
 
-type Link struct {
+type Url struct {
 	Url string `json:"url" validate:"url"`
 }

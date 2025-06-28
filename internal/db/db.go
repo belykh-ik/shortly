@@ -17,7 +17,7 @@ func ConnectDb(config *models.Config) *Db {
 		panic("Error connect Postgres Db")
 	}
 	//Create Migrate
-	db.AutoMigrate(&Link{})
+	db.AutoMigrate(&models.Link{}, &models.User{})
 
 	return &Db{
 		db,

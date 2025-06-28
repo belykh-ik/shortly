@@ -27,7 +27,7 @@ func main() {
 	db := db.ConnectDb(&dbConf)
 
 	//Create LinkDependence
-	link := service.NewLink(db)
+	link := service.NewLinkDeps(db)
 
 	mux := http.NewServeMux()
 

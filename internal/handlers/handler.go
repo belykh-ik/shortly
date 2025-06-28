@@ -31,7 +31,7 @@ func (h handlers) getUrlByHash(w http.ResponseWriter, req *http.Request) {
 
 func (h handlers) createUrl() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		link, err := service.RequestJson[models.Link](req)
+		link, err := service.RequestJson[models.Url](req)
 		if err != nil {
 			service.ResponseJson(w, err, http.StatusBadRequest)
 		}
@@ -42,7 +42,7 @@ func (h handlers) createUrl() http.Handler {
 
 func (h handlers) updateUrl() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		link, err := service.RequestJson[models.Link](req)
+		link, err := service.RequestJson[models.Url](req)
 		if err != nil {
 			service.ResponseJson(w, err, http.StatusBadRequest)
 		}

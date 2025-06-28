@@ -1,9 +1,8 @@
-package db
+package service
 
 import (
+	"api/shorturl/internal/models"
 	"math/rand"
-
-	"gorm.io/gorm"
 )
 
 var (
@@ -11,14 +10,8 @@ var (
 	existsHash      = (make(map[string][]rune, 0))
 )
 
-type Link struct {
-	gorm.Model
-	Url  string `json:"url"`
-	Hash string `json:"hash" validate:"unique"`
-}
-
-func NewLink(url string) *Link {
-	return &Link{
+func NewLink(url string) *models.Link {
+	return &models.Link{
 		Url:  url,
 		Hash: generateHash(30),
 	}

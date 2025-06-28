@@ -2,7 +2,6 @@ package service
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -19,6 +18,5 @@ func RequestJson[T any](req *http.Request) (*T, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(request)
 	return &request, nil
 }

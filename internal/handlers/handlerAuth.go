@@ -9,12 +9,14 @@ import (
 )
 
 type AuthHandler struct {
-	Db *models.Config
+	Db             *models.Config
+	userRepository *service.UserRepository
 }
 
-func RegisterAuthRoutes(router *http.ServeMux, db *models.Config) {
+func RegisterAuthRoutes(router *http.ServeMux, db *models.Config, userRepository *service.UserRepository) {
 	handler := &AuthHandler{
-		Db: db,
+		Db:             db,
+		userRepository: userRepository,
 	}
 	router.Handle("POST /auth/login", middleware.IsAuth(handler.login()))
 	router.Handle("POST /auth/register", middleware.IsAuth(handler.register()))
@@ -33,11 +35,15 @@ func (h *AuthHandler) login() http.Handler {
 
 func (h *AuthHandler) register() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		fmt.Println("Register")
-		s, err := service.RequestJson[models.RegisterRequest](req)
+		reg, err := service.RequestJson[models.RegisterRequest](req)
 		if err != nil {
 			service.ResponseJson(w, err, http.StatusBadRequest)
 		}
-		service.ResponseJson(w, s, http.StatusOK)
+		user, err := h.userRepository.Create(reg)
+		if err != nil {
+			service.ResponseJson(w, err, http.StatusBadRequest)
+			return
+		}
+		service.ResponseJson(w, user, http.StatusCreated)
 	})
 }

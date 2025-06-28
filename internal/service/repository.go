@@ -3,6 +3,7 @@ package service
 import (
 	"api/shorturl/internal/db"
 	"api/shorturl/internal/models"
+	"errors"
 )
 
 type LinkDeps struct {
@@ -25,10 +26,13 @@ func (l LinkDeps) LinkUpdate(link *models.Url, id *uint64) {
 	l.Database.Where("id = ?", id).Updates(linkStruct)
 }
 
-func (l LinkDeps) LinkGet(hash string) *models.Link {
+func (l LinkDeps) LinkGet(hash string) (*models.Link, error) {
 	var originalLink *models.Link
 	l.Database.First(&originalLink, "hash = ?", hash)
-	return originalLink
+	if originalLink.Url == "" {
+		return nil, errors.New("URL_NOT_FOUND")
+	}
+	return originalLink, nil
 }
 
 func (l LinkDeps) LinkDelete(id *uint64) error {

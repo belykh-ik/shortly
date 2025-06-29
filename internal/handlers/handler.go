@@ -9,17 +9,19 @@ import (
 )
 
 type handlers struct {
-	link *service.LinkDeps
+	link   *service.LinkDeps
+	config *models.Config
 }
 
-func RegisterRoutes(router *http.ServeMux, link *service.LinkDeps) {
+func RegisterRoutes(router *http.ServeMux, config *models.Config, link *service.LinkDeps) {
 	handler := &handlers{
-		link: link,
+		link:   link,
+		config: config,
 	}
 	router.HandleFunc("GET /link/{hash}", handler.getUrlByHash)
-	router.Handle("POST /create", middleware.IsAuth(handler.createUrl()))
-	router.Handle("PATCH /update/{id}", middleware.IsAuth(handler.updateUrl()))
-	router.Handle("DELETE /delete/{id}", middleware.IsAuth(handler.deleteLink()))
+	router.Handle("POST /create", middleware.IsAuth(config, handler.createUrl()))
+	router.Handle("PATCH /update/{id}", middleware.IsAuth(config, handler.updateUrl()))
+	router.Handle("DELETE /delete/{id}", middleware.IsAuth(config, handler.deleteLink()))
 }
 
 func (h handlers) getUrlByHash(w http.ResponseWriter, req *http.Request) {

@@ -18,8 +18,8 @@ func RegisterAuthRoutes(router *http.ServeMux, db *models.Config, userRepository
 		Db:             db,
 		userRepository: userRepository,
 	}
-	router.Handle("POST /auth/login", middleware.IsAuth(handler.login()))
-	router.Handle("POST /auth/register", middleware.IsAuth(handler.register()))
+	router.Handle("POST /auth/login", middleware.IsAuth(db, handler.login()))
+	router.Handle("POST /auth/register", handler.register())
 }
 
 func (h *AuthHandler) login() http.Handler {

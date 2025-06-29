@@ -35,7 +35,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	//Register Routes
-	handlers.RegisterRoutes(mux, link)
+	handlers.RegisterRoutes(mux, &dbConf, link)
 	handlers.RegisterAuthRoutes(mux, &dbConf, userRepository)
 
 	//Create Server

@@ -26,3 +26,13 @@ func (j *JWT) Create(email string) (string, error) {
 	}
 	return tokenString, nil
 }
+
+func (j *JWT) Parse(token string) bool {
+	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+		return []byte(j.Secret), nil
+	})
+	if err != nil {
+		return false
+	}
+	return t.Valid
+}

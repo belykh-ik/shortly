@@ -4,7 +4,6 @@ import (
 	"api/shorturl/internal/models"
 	"api/shorturl/internal/service"
 	"api/shorturl/middleware"
-	"fmt"
 	"net/http"
 )
 
@@ -24,12 +23,16 @@ func RegisterAuthRoutes(router *http.ServeMux, db *models.Config, userRepository
 
 func (h *AuthHandler) login() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		fmt.Println("Login")
-		s, err := service.RequestJson[models.LoginRequest](req)
+		data, err := service.RequestJson[models.LoginRequest](req)
 		if err != nil {
 			service.ResponseJson(w, err, http.StatusBadRequest)
 		}
-		service.ResponseJson(w, s, http.StatusOK)
+		userName, err := h.userRepository.LoginUser(data)
+		if err != nil {
+			service.ResponseJson(w, err, http.StatusUnauthorized)
+			return
+		}
+		service.ResponseJson(w, userName, http.StatusOK)
 	})
 }
 
@@ -39,7 +42,7 @@ func (h *AuthHandler) register() http.Handler {
 		if err != nil {
 			service.ResponseJson(w, err, http.StatusBadRequest)
 		}
-		user, err := h.userRepository.Create(reg)
+		user, err := h.userRepository.CreateUser(reg)
 		if err != nil {
 			service.ResponseJson(w, err, http.StatusBadRequest)
 			return

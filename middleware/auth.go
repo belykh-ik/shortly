@@ -3,7 +3,6 @@ package middleware
 import (
 	"fmt"
 	"net/http"
-	"strings"
 )
 
 func IsAuth(next http.Handler) http.Handler {
@@ -14,8 +13,7 @@ func IsAuth(next http.Handler) http.Handler {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		auth := strings.TrimPrefix(authorization, "Bareer ")
-		fmt.Println(auth)
+		// auth := strings.TrimPrefix(authorization, "Bareer ")
 		next.ServeHTTP(w, r)
 	})
 }

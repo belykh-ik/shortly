@@ -3,8 +3,8 @@ package models
 import "gorm.io/gorm"
 
 type Config struct {
-	DSN   string
-	TOKEN string
+	DSN    string
+	Secret string
 }
 
 type Link struct {

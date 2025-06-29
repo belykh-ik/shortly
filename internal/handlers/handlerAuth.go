@@ -3,6 +3,7 @@ package handlers
 import (
 	"api/shorturl/internal/models"
 	"api/shorturl/internal/service"
+	"api/shorturl/internal/service/jwt"
 	"api/shorturl/middleware"
 	"net/http"
 )
@@ -27,26 +28,36 @@ func (h *AuthHandler) login() http.Handler {
 		if err != nil {
 			service.ResponseJson(w, err, http.StatusBadRequest)
 		}
-		userName, err := h.userRepository.LoginUser(data)
+		userEmail, err := h.userRepository.LoginUser(data)
 		if err != nil {
 			service.ResponseJson(w, err, http.StatusUnauthorized)
 			return
 		}
-		service.ResponseJson(w, userName, http.StatusOK)
+		token, err := jwt.NewJWT(h.Db.Secret).Create(userEmail)
+		if err != nil {
+			service.ResponseJson(w, err, http.StatusBadGateway)
+			return
+		}
+		service.ResponseJson(w, token, http.StatusOK)
 	})
 }
 
 func (h *AuthHandler) register() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		reg, err := service.RequestJson[models.RegisterRequest](req)
+		data, err := service.RequestJson[models.RegisterRequest](req)
 		if err != nil {
 			service.ResponseJson(w, err, http.StatusBadRequest)
 		}
-		user, err := h.userRepository.CreateUser(reg)
+		userEmail, err := h.userRepository.CreateUser(data)
 		if err != nil {
 			service.ResponseJson(w, err, http.StatusBadRequest)
 			return
 		}
-		service.ResponseJson(w, user, http.StatusCreated)
+		token, err := jwt.NewJWT(h.Db.Secret).Create(userEmail)
+		if err != nil {
+			service.ResponseJson(w, err, http.StatusBadGateway)
+			return
+		}
+		service.ResponseJson(w, token, http.StatusCreated)
 	})
 }

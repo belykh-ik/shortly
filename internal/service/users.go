@@ -27,18 +27,18 @@ func (db *UserRepository) LoginUser(data *models.LoginRequest) (string, error) {
 	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password)); err != nil {
 		return "", errors.New("USER_OR_PASSWORD_ERROR")
 	}
-	return user.Name, nil
+	return user.Email, nil
 }
 
 // Create New User
-func (db *UserRepository) CreateUser(reg *models.RegisterRequest) (*models.User, error) {
+func (db *UserRepository) CreateUser(reg *models.RegisterRequest) (string, error) {
 	userExist, _ := db.findByEmail(reg.Email)
 	if userExist != nil {
-		return nil, errors.New("EXIST")
+		return "", errors.New("EXIST")
 	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(reg.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, errors.New("ERROR_ADD_PASSWORD")
+		return "", errors.New("ERROR_ADD_PASSWORD")
 	}
 	user := &models.User{
 		Name:     reg.Name,
@@ -46,7 +46,7 @@ func (db *UserRepository) CreateUser(reg *models.RegisterRequest) (*models.User,
 		Password: string(hashedPassword),
 	}
 	db.db.Create(user)
-	return user, nil
+	return user.Email, nil
 }
 
 // Search user by Email

@@ -20,8 +20,8 @@ func main() {
 		panic("Error Load .env")
 	}
 	dbConf := models.Config{
-		DSN:   os.Getenv("DSN"),
-		TOKEN: os.Getenv("TOKEN"),
+		DSN:    os.Getenv("DSN"),
+		Secret: os.Getenv("SECRET"),
 	}
 	//Connect to Database Postgres
 	db := db.ConnectDb(&dbConf)

@@ -3,6 +3,7 @@ package handlers
 import (
 	"api/shorturl/internal/models"
 	"api/shorturl/internal/service"
+	"api/shorturl/internal/statistics"
 	"api/shorturl/middleware"
 	"fmt"
 	"net/http"
@@ -12,12 +13,14 @@ import (
 type handlers struct {
 	link   *service.LinkDeps
 	config *models.Config
+	stat   *statistics.StatisticsRepository
 }
 
-func RegisterRoutes(router *http.ServeMux, config *models.Config, link *service.LinkDeps) {
+func RegisterRoutes(router *http.ServeMux, config *models.Config, link *service.LinkDeps, stat *statistics.StatisticsRepository) {
 	handler := &handlers{
 		link:   link,
 		config: config,
+		stat:   stat,
 	}
 	router.Handle("GET /link/{hash}", middleware.IsAuth(config, handler.getUrlByHash()))
 	router.Handle("GET /links", middleware.IsAuth(config, handler.getAllLinks()))
@@ -34,6 +37,7 @@ func (h handlers) getUrlByHash() http.Handler {
 			service.ResponseJson(w, err, http.StatusBadRequest)
 			return
 		}
+		h.stat.AddClick(originalLink.ID)
 		// http.Redirect(w, req, originalLink.Url, http.StatusPermanentRedirect)
 		service.ResponseJson(w, originalLink, http.StatusOK)
 	})

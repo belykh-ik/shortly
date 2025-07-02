@@ -1,6 +1,9 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/datatypes"
+	"gorm.io/gorm"
+)
 
 type Config struct {
 	DSN    string
@@ -9,8 +12,9 @@ type Config struct {
 
 type Link struct {
 	gorm.Model
-	Url  string `json:"url"`
-	Hash string `json:"hash" validate:"unique"`
+	Url   string  `json:"url"`
+	Hash  string  `json:"hash" validate:"unique"`
+	Stats []Stats `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
 type User struct {
@@ -37,4 +41,11 @@ type RegisterRequest struct {
 
 type Url struct {
 	Url string `json:"url" validate:"url"`
+}
+
+type Stats struct {
+	gorm.Model
+	Link_id uint           `json:"link_id"`
+	Clicks  uint           `json:"clicks"`
+	Date    datatypes.Date `json:"date"`
 }

@@ -9,6 +9,7 @@ import (
 	"api/shorturl/internal/handlers"
 	"api/shorturl/internal/models"
 	"api/shorturl/internal/service"
+	"api/shorturl/internal/statistics"
 	"api/shorturl/middleware"
 
 	"github.com/joho/godotenv"
@@ -32,10 +33,13 @@ func main() {
 	//Create UserRepository
 	userRepository := service.NewUserRepository(db)
 
+	//Create StatisticRepository
+	stat := statistics.NewStatisticsRepository(db)
+
 	mux := http.NewServeMux()
 
 	//Register Routes
-	handlers.RegisterRoutes(mux, &dbConf, link)
+	handlers.RegisterRoutes(mux, &dbConf, link, stat)
 	handlers.RegisterAuthRoutes(mux, &dbConf, userRepository)
 
 	//Create Server

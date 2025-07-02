@@ -3,9 +3,16 @@ package middleware
 import (
 	"api/shorturl/internal/models"
 	"api/shorturl/internal/service/jwt"
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
+)
+
+type key string
+
+const (
+	KEY key = "default"
 )
 
 func IsAuth(config *models.Config, next http.Handler) http.Handler {
@@ -13,15 +20,18 @@ func IsAuth(config *models.Config, next http.Handler) http.Handler {
 		authorization := r.Header.Get("Authorization")
 		if authorization == "" {
 			fmt.Println("Is not auth")
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 		token := strings.TrimPrefix(authorization, "Bareer ")
-		if !jwt.NewJWT(config.Secret).Parse(token) {
+		ok, email := jwt.NewJWT(config.Secret).Parse(token)
+		if !ok {
 			fmt.Println("TOKEN_IS_NOT_VALID!")
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		next.ServeHTTP(w, r)
+		ctx := context.WithValue(r.Context(), KEY, email)
+		req := r.WithContext(ctx)
+		next.ServeHTTP(w, req)
 	})
 }

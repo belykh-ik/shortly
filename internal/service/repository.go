@@ -43,3 +43,9 @@ func (l LinkDeps) LinkDelete(id *uint64) error {
 	l.Database.Delete(&models.Link{}, uint(*id))
 	return nil
 }
+
+func (l LinkDeps) GetAllLinks(limit int) []models.Link {
+	var links []models.Link
+	l.Database.Table("links").Where("deleted_at is null").Order("id").Limit(limit).Scan(&links)
+	return links
+}

@@ -1,4 +1,6 @@
 .env
+/bot/.env
+/bot/tgBot
 main
 postgres_data/
 frontend/

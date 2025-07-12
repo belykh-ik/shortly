@@ -1,26 +1,162 @@
-# Use postgres/example user/password credentials
-services:
+version: '3.8'
 
+services:
+  # ZooKeeper
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.2.15
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    healthcheck:
+      test: ["CMD", "echo", "ruok", "|", "nc", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper
+
+  # PostgreSQL
   postgres:
     image: postgres:15
+    container_name: postgres
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  # UI PostgreSQL
   adminer:
     image: adminer
+    container_name: adminer
     restart: always
     ports:
       - "8081:8080"
     depends_on:
       - postgres
     environment:
-      - ADMINER_DEFAULT_SERVER=postgres
+      ADMINER_DEFAULT_SERVER: postgres
+
+  # bot
+  bot:
+    container_name: telegram-bot
+    build:
+      context: ./bot
+      dockerfile: dockerfile
+    depends_on:
+      - kafka0
+      - kafka1
+    networks:
+      - default
+    restart: unless-stopped
+
+  # Kafka‑брокер #1
+  kafka0:
+    image: confluentinc/cp-kafka:7.2.15
+    container_name: kafka0
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "29092:9092"   # проброс хост->контейнер
+      - "9997:9997"    # JMX
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+      # Внутри сети слушаем 9092, рекламируем 9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka0:9092
+
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
+      # Внутренние топики и транзакции
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+      # JMX для метрик
+      KAFKA_JMX_PORT: 9997
+      KAFKA_JMX_OPTS: >-
+        -Dcom.sun.management.jmxremote
+        -Dcom.sun.management.jmxremote.authenticate=false
+        -Dcom.sun.management.jmxremote.ssl=false
+        -Djava.rmi.server.hostname=kafka0
+        -Dcom.sun.management.jmxremote.rmi.port=9997
+
+    volumes:
+      - kafka0-data:/var/lib/kafka/data
+
+  # Kafka‑брокер #2
+  kafka1:
+    image: confluentinc/cp-kafka:7.2.15
+    container_name: kafka1
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "39092:9092"
+      - "9998:9998"
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:9092
+
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+      KAFKA_JMX_PORT: 9998
+      KAFKA_JMX_OPTS: >-
+        -Dcom.sun.management.jmxremote
+        -Dcom.sun.management.jmxremote.authenticate=false
+        -Dcom.sun.management.jmxremote.ssl=false
+        -Djava.rmi.server.hostname=kafka1
+        -Dcom.sun.management.jmxremote.rmi.port=9998
+
+    volumes:
+      - kafka1-data:/var/lib/kafka/data
+
+  # Kafka‑UI (Provectus)
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8082:8080"
+    depends_on:
+      - kafka0
+      - kafka1
+    environment:
+      # В UI тоже используем внутренние адреса: порт 9092
+      KAFKA_CLUSTERS_0_NAME: cluster0
+      KAFKA_CLUSTERS_0_BOOTSTRAP_SERVERS: kafka0:9092
+      KAFKA_CLUSTERS_0_JMX_PORT: 9997
+
+      KAFKA_CLUSTERS_1_NAME: cluster1
+      KAFKA_CLUSTERS_1_BOOTSTRAP_SERVERS: kafka1:9092
+      KAFKA_CLUSTERS_1_JMX_PORT: 9998
+
+      DYNAMIC_CONFIG_ENABLED: 'true'
 
 volumes:
   postgres_data:
+  kafka0-data:
+  kafka1-data:
+  zookeeper-data:
+
+
+networks:
+  default:
+    driver: bridge

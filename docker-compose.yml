@@ -44,6 +44,22 @@ services:
       ADMINER_DEFAULT_SERVER: postgres
 
   # bot
+  shortly:
+    container_name: shortly-app
+    build:
+      context: .
+      dockerfile: dockerfile
+    ports:
+      - "8083:8082"
+    depends_on:
+      - postgres
+      - kafka0
+      - kafka1
+    networks:
+      - default
+    restart: unless-stopped
+
+  # bot
   bot:
     container_name: telegram-bot
     build:

@@ -2,9 +2,12 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
+	"sync"
 
+	"api/shorturl/broker"
 	"api/shorturl/internal/db"
 	"api/shorturl/internal/handlers"
 	"api/shorturl/internal/models"
@@ -16,6 +19,9 @@ import (
 )
 
 func main() {
+	servers := []string{"kafka0:9092", "kafka1:9092"}
+	topic := "links"
+	groupId := "my-group"
 	err := godotenv.Load()
 	if err != nil {
 		panic("Error Load .env")
@@ -24,6 +30,7 @@ func main() {
 		DSN:    os.Getenv("DSN"),
 		Secret: os.Getenv("SECRET"),
 	}
+	wg := sync.WaitGroup{}
 	//Connect to Database Postgres
 	db := db.ConnectDb(&dbConf)
 
@@ -49,8 +56,25 @@ func main() {
 	}
 
 	fmt.Println("Server is listening on port 8082")
-	err = server.ListenAndServe()
-	if err != nil {
-		fmt.Printf("Error %s", err)
-	}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		err = server.ListenAndServe()
+		if err != nil {
+			fmt.Printf("Error %s", err)
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		consumeer, err := broker.NewConsumer(servers, groupId, topic, mux)
+		if err != nil {
+			fmt.Printf("Error %s", err)
+		}
+		log.Println("Start Consumer...")
+		consumeer.Start()
+	}()
+
+	wg.Wait()
 }

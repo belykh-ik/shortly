@@ -106,6 +106,27 @@ services:
         -Dcom.sun.management.jmxremote.ssl=false
         -Djava.rmi.server.hostname=kafka0
         -Dcom.sun.management.jmxremote.rmi.port=9997
+    command: |
+      sh -c '
+        # Запустить Kafka в фоне
+        /etc/confluent/docker/run &
+        KAFKA_PID=$!
+
+        # Подождать, пока брокер примет соединения
+        cub kafka-ready -b localhost:9092 1 20
+
+        # Создать топик links, если его нет
+        kafka-topics \
+          --bootstrap-server localhost:9092 \
+          --if-not-exists \
+          --create \
+          --topic links \
+          --partitions 1 \
+          --replication-factor 1
+
+        # Передать управление основному процессу Kafka
+        wait $KAFKA_PID
+      '
 
     volumes:
       - kafka0-data:/var/lib/kafka/data
@@ -141,6 +162,27 @@ services:
         -Dcom.sun.management.jmxremote.ssl=false
         -Djava.rmi.server.hostname=kafka1
         -Dcom.sun.management.jmxremote.rmi.port=9998
+    command: |
+      sh -c '
+        # Запустить Kafka в фоне
+        /etc/confluent/docker/run &
+        KAFKA_PID=$!
+
+        # Подождать, пока брокер примет соединения
+        cub kafka-ready -b localhost:9092 1 20
+
+        # Создать топик links, если его нет
+        kafka-topics \
+          --bootstrap-server localhost:9092 \
+          --if-not-exists \
+          --create \
+          --topic links \
+          --partitions 1 \
+          --replication-factor 1
+
+        # Передать управление основному процессу Kafka
+        wait $KAFKA_PID
+      '
 
     volumes:
       - kafka1-data:/var/lib/kafka/data

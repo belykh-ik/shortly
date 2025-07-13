@@ -95,10 +95,12 @@ func (c *Consumer) handleMassage(msg []byte) {
 	if err != nil {
 		log.Println(err)
 	}
+	// Create *http.Request
 	req := httptest.NewRequest("POST", "/create", bytes.NewReader(msgByte))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bareer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imlnb3JfcHJvZF92MkBkZXYuY29tIn0.6eAFb6l1iRkepFeeTBqeSkA2IlKZPsdq433AwLAqniI")
-
+	// Add Authorization
+	req.Header.Set("Authorization", os.Getenv("TOKEN"))
+	// Create *httptest.ResponseRecorder (ResponseWriter interface)
 	rr := httptest.NewRecorder()
 
 	c.Routrer.ServeHTTP(rr, req)

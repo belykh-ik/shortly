@@ -8,6 +8,8 @@ import (
 	"sync"
 
 	"api/shorturl/broker"
+	"api/shorturl/broker/handleMessage"
+	"api/shorturl/internal/consts"
 	"api/shorturl/internal/db"
 	"api/shorturl/internal/handlers"
 	"api/shorturl/internal/models"
@@ -20,8 +22,6 @@ import (
 
 func main() {
 	servers := []string{"kafka0:9092", "kafka1:9092"}
-	topic := "links"
-	groupId := "my-group"
 	err := godotenv.Load()
 	if err != nil {
 		panic("Error Load .env")
@@ -44,6 +44,9 @@ func main() {
 	stat := statistics.NewStatisticsRepository(db)
 
 	mux := http.NewServeMux()
+
+	// Зависимость для обработки сообщений
+	messageDeps := handleMessage.NewHandleMessageDeps(mux)
 
 	//Register Routes
 	handlers.RegisterRoutes(mux, &dbConf, link, stat)
@@ -68,7 +71,7 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		consumeer, err := broker.NewConsumer(servers, groupId, topic, mux)
+		consumeer, err := broker.NewConsumer(servers, consts.GroupId, consts.ConsumerTopic, messageDeps)
 		if err != nil {
 			fmt.Printf("Error %s", err)
 		}

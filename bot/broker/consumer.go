@@ -1,12 +1,10 @@
 package broker
 
 import (
-	"api/shorturl/broker/handleMessage"
 	"log"
 	"os"
 	"os/signal"
 	"strings"
-	"sync"
 	"syscall"
 	"time"
 
@@ -19,10 +17,9 @@ const (
 
 type Consumer struct {
 	Consumer *kafka.Consumer
-	h        *handleMessage.HandleMessageDeps
 }
 
-func NewConsumer(servers []string, groupId string, topic string, h *handleMessage.HandleMessageDeps) (*Consumer, error) {
+func NewConsumer(servers []string, groupId string, topic string) (*Consumer, error) {
 	c, err := kafka.NewConsumer(&kafka.ConfigMap{
 		"bootstrap.servers":        strings.Join(servers, ","),
 		"group.id":                 groupId,
@@ -45,17 +42,13 @@ func NewConsumer(servers []string, groupId string, topic string, h *handleMessag
 
 	return &Consumer{
 		Consumer: c,
-		h:        h,
 	}, nil
 }
 
-func (c *Consumer) Start() {
+func (c *Consumer) Start(in chan string) {
 	// Готовимся корректно завершить при SIGINT/SIGTERM
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
-
-	wg := sync.WaitGroup{}
-	check := false
 
 	run := true
 
@@ -71,19 +64,10 @@ func (c *Consumer) Start() {
 				continue
 			}
 			if err == nil {
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
-					rr := c.h.HandleMassage(msg.Value)
-					Produce(rr.Body.String())
-					check = true
-				}()
-				wg.Wait()
-				if check {
-					if _, err = c.Consumer.StoreMessage(msg); err != nil {
-						log.Println(err)
-						break
-					}
+				in <- string(msg.Value)
+				if _, err = c.Consumer.StoreMessage(msg); err != nil {
+					log.Println(err)
+					break
 				}
 			} else if !err.(kafka.Error).IsTimeout() {
 				log.Printf("Consumer error: %v (%v)\n", err, msg)

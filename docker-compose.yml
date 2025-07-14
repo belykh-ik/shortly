@@ -123,6 +123,14 @@ services:
           --topic links \
           --partitions 1 \
           --replication-factor 1
+        # Создать топик processedLinks, если его нет
+        kafka-topics \
+          --bootstrap-server localhost:9092 \
+          --if-not-exists \
+          --create \
+          --topic processedLinks \
+          --partitions 1 \
+          --replication-factor 1
 
         # Передать управление основному процессу Kafka
         wait $KAFKA_PID
@@ -177,6 +185,14 @@ services:
           --if-not-exists \
           --create \
           --topic links \
+          --partitions 1 \
+          --replication-factor 1
+        # Создать топик processedLinks, если его нет
+        kafka-topics \
+          --bootstrap-server localhost:9092 \
+          --if-not-exists \
+          --create \
+          --topic processedLinks \
           --partitions 1 \
           --replication-factor 1
 

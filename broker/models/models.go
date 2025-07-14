@@ -1,5 +1,5 @@
 package models
 
-type MassageConsumer struct {
+type MessageConsumer struct {
 	Url string `json:"url"`
 }

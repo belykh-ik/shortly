@@ -1,6 +1,6 @@
 # Shortly
 
-A lightning‑fast, minimalist Go URL shortener with support for custom aliases and built‑in click analytics.
+Shortly — это многокомпонентный сервис для сокращения ссылок с поддержкой CLI, REST API, Telegram‑бота и Kafka‑интеграции. Построен по принципам Clean Architecture с фокусом на расширяемость и производительность.
 
 ---
 
@@ -25,12 +25,14 @@ A lightning‑fast, minimalist Go URL shortener with support for custom aliases 
 
 ---
 
-## Features
+## 🚀 Features
 
-- 🎨 **fast creation** of short links
-- ⚡ **high‑speed** redirects
-- 📈 Real‑time click analytics per link
-- 🐳 Docker & Docker Compose for seamless setup
+- ⚡ **Мгновенное сокращение** длинных ссылок через CLI, HTTP или Telegram
+- 🎯 **Мгновенные редиректы** с высокой производительностью
+- 📊 **Реальное время** аналитики переходов по ссылкам через Kafka
+- 🤖 Telegram‑бот: сокращение и разворот ссылок в чате
+- 🐳 Быстрый старт через Docker & Compose
+- 🔌 Kafka-интеграция для событий и логов
 
 ---
 
@@ -42,6 +44,7 @@ A lightning‑fast, minimalist Go URL shortener with support for custom aliases 
 - **Routing**: `net/http` & `http.ServeMux`
 - **Migrations**: GORM Migrate
 - **Env Management**: `joho/godotenv`
+- **Message Broker**: Kafka
 
 ---
 
@@ -52,6 +55,7 @@ A lightning‑fast, minimalist Go URL shortener with support for custom aliases 
 - Go 1.24+
 - Docker & Docker Compose
 - PostgreSQL
+- Kafka
 
 ### Configuration
 
